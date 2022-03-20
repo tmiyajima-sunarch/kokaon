@@ -40,13 +40,13 @@ public class Room {
 
   public Room addAudioBy(User user, Audio audio) {
     this.checkStateIsOpen();
-    this.checkUserIsOwner(user);
+    this.checkUserIsMember(user);
     return this.withAudioSet(Sets.add(this.audioSet, audio));
   }
 
   public Room removeAudioBy(User user, Audio audio) {
     this.checkStateIsOpen();
-    this.checkUserIsOwner(user);
+    this.checkUserIsMember(user);
     return this.withAudioSet(Sets.remove(this.audioSet, audio));
   }
 
@@ -59,6 +59,12 @@ public class Room {
   private void checkStateIsOpen() {
     if (this.state == RoomState.CLOSED) {
       throw new RoomStateException("ルームは既にクローズされています: %s".formatted(this.id.value()));
+    }
+  }
+
+  private void checkUserIsMember(User user) {
+    if (!this.owner.equals(user) && !this.members.contains(user)) {
+      throw new RoomOperationException("ルームメンバー以外には許可されていません: %s".formatted(this.id.value()));
     }
   }
 
