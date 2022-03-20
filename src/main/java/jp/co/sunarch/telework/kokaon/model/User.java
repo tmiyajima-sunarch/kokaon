@@ -1,15 +1,14 @@
 package jp.co.sunarch.telework.kokaon.model;
 
-import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 /**
  * ユーザー。
  *
  * @author takeshi
  */
-@EqualsAndHashCode(of = "id", callSuper = false)
-public record User(
-    UserId id,
-    String nickname
-) {
+@Value
+public class User {
+  UserId id;
+  String nickname;
 }

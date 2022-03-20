@@ -24,7 +24,7 @@ public class InMemoryRoomRepository implements RoomRepository {
 
   @Override
   public void save(Room room) {
-    this.rooms.put(room.id(), room);
+    this.rooms.put(room.getId(), room);
   }
 
   @Override
