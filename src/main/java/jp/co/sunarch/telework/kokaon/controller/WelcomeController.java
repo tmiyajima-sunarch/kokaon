@@ -45,7 +45,7 @@ public class WelcomeController {
     }
 
     // TODO フォームのバリデーションとエラー表示
-   
+
     // ユーザーを初期化して、セッションに保持する
     var user = this.initializeUserUseCase.execute(initializeUserForm.getNickname());
     this.sessionUser.setUser(user);
@@ -57,7 +57,7 @@ public class WelcomeController {
   private String determineRedirectPath() {
     // 初期化前のパスがあれば遷移する
     if (this.sessionPath.hasPath()) {
-      return this.sessionPath.getPath();
+      return this.sessionPath.getAndClearPath();
     }
 
     return "/menu";

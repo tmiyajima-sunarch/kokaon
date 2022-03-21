@@ -16,4 +16,10 @@ public class SessionPath {
   public boolean hasPath() {
     return this.path != null;
   }
+
+  public String getAndClearPath() {
+    var path = this.path;
+    this.path = null;
+    return path;
+  }
 }

@@ -6,6 +6,7 @@ import jp.co.sunarch.telework.kokaon.model.UserRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,5 +27,10 @@ public class InMemoryUserRepository implements UserRepository {
   @Override
   public void save(User user) {
     this.users.put(user.getId(), user);
+  }
+
+  @Override
+  public Optional<User> findById(UserId userId) {
+    return Optional.ofNullable(this.users.get(userId));
   }
 }

@@ -10,12 +10,8 @@
   <meta name="author" content="">
 </head>
 <body>
-<h1>Room: [[${room.name}]]</h1>
-<h2>メンバー</h2>
-<ul>
-  <th:block th:each="member in ${members}">
-    <li>[[${member.nickname}]]</li>
-  </th:block>
-</ul>
+<h1>[[${status}]]</h1>
+<p>[[${message}]]</p>
+<a th:href="@{/}">戻る</a>
 </body>
 </html>
