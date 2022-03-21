@@ -4,6 +4,7 @@ import jp.co.sunarch.telework.kokaon.event.AudioAddedEvent;
 import jp.co.sunarch.telework.kokaon.event.ClientEventPublisher;
 import jp.co.sunarch.telework.kokaon.model.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author takeshi
  */
 @RequiredArgsConstructor
+@Service
 public class AddAudioUseCase {
   private final RoomRepository roomRepository;
   private final AudioRepository audioRepository;

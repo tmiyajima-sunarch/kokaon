@@ -4,6 +4,7 @@ import jp.co.sunarch.telework.kokaon.event.AudioRemovedEvent;
 import jp.co.sunarch.telework.kokaon.event.ClientEventPublisher;
 import jp.co.sunarch.telework.kokaon.model.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 /**
  * オーディオを削除する。
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
  * @author takeshi
  */
 @RequiredArgsConstructor
+@Service
 public class RemoveAudioUseCase {
   private final RoomRepository roomRepository;
   private final AudioRepository audioRepository;

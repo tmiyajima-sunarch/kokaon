@@ -4,6 +4,7 @@ import jp.co.sunarch.telework.kokaon.model.Room;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 /**
  * ルームを作成する。
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
  * @author takeshi
  */
 @RequiredArgsConstructor
+@Service
 public class CreateRoomUseCase {
   private final RoomRepository roomRepository;
 

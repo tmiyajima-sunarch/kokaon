@@ -6,6 +6,7 @@ import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 /**
  * ルームを閉じる。
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
  * @author takeshi
  */
 @RequiredArgsConstructor
+@Service
 public class CloseRoomUseCase {
   private final RoomRepository roomRepository;
   private final ClientEventPublisher clientEventPublisher;

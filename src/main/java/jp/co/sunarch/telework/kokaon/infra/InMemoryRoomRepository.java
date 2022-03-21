@@ -3,6 +3,7 @@ package jp.co.sunarch.telework.kokaon.infra;
 import jp.co.sunarch.telework.kokaon.model.Room;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author takeshi
  */
+@Repository
 public class InMemoryRoomRepository implements RoomRepository {
   private final Map<RoomId, Room> rooms = new ConcurrentHashMap<>();
 
