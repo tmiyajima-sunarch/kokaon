@@ -1,5 +1,7 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
+import jp.co.sunarch.telework.kokaon.event.AudioRemovedEvent;
+import jp.co.sunarch.telework.kokaon.event.ClientEventPublisher;
 import jp.co.sunarch.telework.kokaon.model.*;
 import lombok.RequiredArgsConstructor;
 
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class RemoveAudioUseCase {
   private final RoomRepository roomRepository;
   private final AudioRepository audioRepository;
+  private final ClientEventPublisher clientEventPublisher;
 
   public void execute(RoomId roomId, User user, AudioId audioId) {
     var room = this.roomRepository.findById(roomId)
@@ -23,5 +26,8 @@ public class RemoveAudioUseCase {
 
     var newRoom = room.removeAudioBy(user, audio);
     this.roomRepository.save(newRoom);
+
+    this.clientEventPublisher.publishRoomEvent(
+        new AudioRemovedEvent(newRoom.getId().value(), audio.getId().value()));
   }
 }
