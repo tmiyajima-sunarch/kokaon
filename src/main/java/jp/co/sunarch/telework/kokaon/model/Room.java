@@ -16,38 +16,38 @@ import java.util.Set;
 public class Room {
   RoomId id;
   String name;
-  User owner;
+  UserId ownerId;
   @With(AccessLevel.PRIVATE)
   RoomState state;
   @With(AccessLevel.PRIVATE)
-  Set<User> members;
+  Set<UserId> memberIds;
   @With(AccessLevel.PRIVATE)
-  Set<Audio> audioSet;
+  Set<AudioId> audioIds;
 
   public static Room of(RoomId id, String name, User owner) {
-    return new Room(id, name, owner, RoomState.OPEN, Set.of(), Set.of());
+    return new Room(id, name, owner.getId(), RoomState.OPEN, Set.of(), Set.of());
   }
 
   public Room join(User user) {
     this.checkStateIsOpen();
-    return this.withMembers(Sets.add(this.members, user));
+    return this.withMemberIds(Sets.add(this.memberIds, user.getId()));
   }
 
   public Room leave(User user) {
     this.checkStateIsOpen();
-    return this.withMembers(Sets.remove(this.members, user));
+    return this.withMemberIds(Sets.remove(this.memberIds, user.getId()));
   }
 
   public Room addAudioBy(User user, Audio audio) {
     this.checkStateIsOpen();
     this.checkUserIsMember(user);
-    return this.withAudioSet(Sets.add(this.audioSet, audio));
+    return this.withAudioIds(Sets.add(this.audioIds, audio.getId()));
   }
 
   public Room removeAudioBy(User user, Audio audio) {
     this.checkStateIsOpen();
     this.checkUserIsMember(user);
-    return this.withAudioSet(Sets.remove(this.audioSet, audio));
+    return this.withAudioIds(Sets.remove(this.audioIds, audio.getId()));
   }
 
   public Room closeBy(User user) {
@@ -63,13 +63,13 @@ public class Room {
   }
 
   private void checkUserIsMember(User user) {
-    if (!this.owner.equals(user) && !this.members.contains(user)) {
+    if (!this.ownerId.equals(user.getId()) && !this.memberIds.contains(user.getId())) {
       throw new RoomOperationException("ルームメンバー以外には許可されていません: %s".formatted(this.id.value()));
     }
   }
 
   private void checkUserIsOwner(User user) {
-    if (!this.owner.equals(user)) {
+    if (!this.ownerId.equals(user.getId())) {
       throw new RoomOperationException("ルームオーナー以外には許可されていません: %s".formatted(this.id.value()));
     }
   }

@@ -11,4 +11,8 @@ import lombok.Value;
 public class User {
   UserId id;
   String nickname;
+
+  public static User of(UserId id, String nickname) {
+    return new User(id, nickname);
+  }
 }
