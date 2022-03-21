@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.1.0/build/pure-min.css"
+        integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
+  <title>Kokaon</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+</head>
+<body>
+<h1>ようこそ、 [[${user.nickname}]]さん</h1>
+<h2>ルームを作成する</h2>
+<form class="pure-form" method="post" th:action="@{/room}">
+  <fieldset>
+    <input type="text" name="name" placeholder="ルーム名"/>
+    <button type="submit" class="pure-button pure-button-primary">作成する</button>
+  </fieldset>
+</form>
+<h2>ルームに参加する</h2>
+<form class="pure-form" method="get" th:action="@{/room}">
+  <fieldset>
+    <input type="text" name="id" placeholder="ルームID"/>
+    <button type="submit" class="pure-button pure-button-primary">参加する</button>
+  </fieldset>
+</form>
+</body>
+</html>
