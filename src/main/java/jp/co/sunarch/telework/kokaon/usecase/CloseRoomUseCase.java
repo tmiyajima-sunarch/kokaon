@@ -1,7 +1,5 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
-import jp.co.sunarch.telework.kokaon.event.ClientEventPublisher;
-import jp.co.sunarch.telework.kokaon.event.RoomClosedEvent;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class CloseRoomUseCase {
   private final RoomRepository roomRepository;
-  private final ClientEventPublisher clientEventPublisher;
 
   public void execute(RoomId roomId, User user) {
     var room = this.roomRepository.findById(roomId)
@@ -25,8 +22,5 @@ public class CloseRoomUseCase {
 
     var newRoom = room.closeBy(user);
     this.roomRepository.save(newRoom);
-
-    this.clientEventPublisher.publishRoomEvent(
-        new RoomClosedEvent(newRoom.getId().value()));
   }
 }
