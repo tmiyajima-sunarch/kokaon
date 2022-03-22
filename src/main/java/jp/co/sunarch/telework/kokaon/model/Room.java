@@ -56,6 +56,10 @@ public class Room {
     return this.withState(RoomState.CLOSED);
   }
 
+  public boolean isMember(User user) {
+    return this.ownerId.equals(user.getId()) || this.memberIds.contains(user.getId());
+  }
+
   private void checkStateIsOpen() {
     if (this.state == RoomState.CLOSED) {
       throw new RoomStateException("ルームは既にクローズされています: %s".formatted(this.id.value()));

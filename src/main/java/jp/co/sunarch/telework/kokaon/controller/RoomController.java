@@ -61,6 +61,7 @@ public class RoomController {
         .sorted(Comparator.comparing(Audio::getName))
         .toList();
 
+    model.addAttribute("user", this.sessionUser.getUser());
     model.addAttribute("room", room);
     model.addAttribute("members", members);
     model.addAttribute("audios", audios);

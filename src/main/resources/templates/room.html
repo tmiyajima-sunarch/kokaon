@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,9 +13,25 @@
 <h1>Room: [[${room.name}]]</h1>
 <h2>メンバー</h2>
 <ul>
-  <th:block th:each="member in ${members}">
-    <li>[[${member.nickname}]]</li>
+  <th:block th:each="member : ${members}">
+    <li>
+      [[${member.nickname}]]
+      <span th:if="${user.id.equals(member.id)}">*</span>
+    </li>
   </th:block>
 </ul>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/webstomp-client@1/dist/webstomp.min.js"></script>
+<script>
+  const socket = new SockJS('/stomp');
+  const stompClient = webstomp.over(socket);
+
+  stompClient.connect({}, (frame) => {
+    stompClient.send('/app/room/xxxx/join');
+  });
+
+
+</script>
 </body>
 </html>

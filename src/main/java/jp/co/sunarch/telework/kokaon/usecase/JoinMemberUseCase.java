@@ -16,11 +16,17 @@ import org.springframework.stereotype.Service;
 public class JoinMemberUseCase {
   private final RoomRepository roomRepository;
 
-  public void execute(RoomId roomId, User user) {
+  public boolean execute(RoomId roomId, User user) {
     var room = this.roomRepository.findById(roomId)
         .orElseThrow(() -> new RoomNotFoundException(roomId));
 
+    if (room.isMember(user)) {
+      return false;
+    }
+
     var newRoom = room.join(user);
     this.roomRepository.save(newRoom);
+
+    return true;
   }
 }
