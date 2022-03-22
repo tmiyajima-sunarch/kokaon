@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,14 @@
   <meta name="author" content="">
 </head>
 <body>
-<h1>[[${status}]]</h1>
-<p>[[${message}]]</p>
-<a th:href="@{/}">戻る</a>
+<h1>Hello</h1>
+<form class="pure-form" method="post" th:action="@{/login}">
+  <fieldset>
+    <legend>名前の設定</legend>
+    <input type="text" name="nickname" placeholder="ニックネーム"/>
+    <input type="hidden" name="password" value=""/>
+    <button type="submit" class="pure-button pure-button-primary">はじめる</button>
+  </fieldset>
+</form>
 </body>
 </html>
