@@ -1,9 +1,12 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
+import jp.co.sunarch.telework.kokaon.event.MemberLeftEvent;
+import jp.co.sunarch.telework.kokaon.event.RoomEventPublisher;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,8 +16,10 @@ import org.springframework.stereotype.Service;
  */
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class LeaveMemberUseCase {
   private final RoomRepository roomRepository;
+  private final RoomEventPublisher roomEventPublisher;
 
   public void execute(RoomId roomId, User user) {
     var room = this.roomRepository.findById(roomId)
@@ -22,5 +27,9 @@ public class LeaveMemberUseCase {
 
     var newRoom = room.leave(user);
     this.roomRepository.save(newRoom);
+
+    log.info("Member left: room={}, user={}", roomId.value(), user.getId().value());
+
+    this.roomEventPublisher.publish(MemberLeftEvent.of(roomId, user));
   }
 }

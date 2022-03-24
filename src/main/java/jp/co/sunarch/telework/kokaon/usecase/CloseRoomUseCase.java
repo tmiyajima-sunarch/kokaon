@@ -4,6 +4,7 @@ import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
  */
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class CloseRoomUseCase {
   private final RoomRepository roomRepository;
 
@@ -22,5 +24,7 @@ public class CloseRoomUseCase {
 
     var newRoom = room.closeBy(user);
     this.roomRepository.save(newRoom);
+
+    log.info("Room closed: room={}, user={}", roomId.value(), user.getId().value());
   }
 }
