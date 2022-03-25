@@ -1,39 +1,43 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://unpkg.com/purecss@2.1.0/build/pure-min.css"
-        integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
-  <title>Kokaon</title>
-  <meta name="description" content="">
-  <meta name="author" content="">
-</head>
-<body>
-<h1>Room: [[${room.name}]]</h1>
-<h2>メンバー</h2>
-<ul>
-  <th:block th:each="member : ${members}">
-    <li>
-      [[${member.nickname}]]
-      <span th:if="${user.id.equals(member.id)}">*</span>
-    </li>
-  </th:block>
-</ul>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/purecss@2.1.0/build/pure-min.css"
+      integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH"
+      crossorigin="anonymous"
+    />
+    <title>Kokaon</title>
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+  </head>
+  <body>
+    <h1>Room: [[${room.name}]]</h1>
+    <h2>メンバー</h2>
+    <ul>
+      <th:block th:each="member : ${members}">
+        <li>
+          [[${member.nickname}]]
+          <span th:if="${user.id.equals(member.id)}">*</span>
+        </li>
+      </th:block>
+    </ul>
 
-<input type="hidden" id="stompUrl" th:value="@{/stomp}"/>
-<input type="hidden" id="roomId" th:value="${room.id.value()}"/>
+    <input type="hidden" id="stompUrl" th:value="@{/stomp}" />
+    <input type="hidden" id="roomId" th:value="${room.id.value()}" />
 
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/webstomp-client@1/dist/webstomp.min.js"></script>
-<script th:src="@{/js/room.js}"></script>
-<script>
-  const stompUrl = document.getElementById('stompUrl').value;
-  const roomId = document.getElementById('roomId').value;
-  initRoom(stompUrl, roomId).then(room => {
-    room.subscribe();
-    room.join();
-  });
-</script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/webstomp-client@1/dist/webstomp.min.js"></script>
+    <script th:src="@{/js/room.js}"></script>
+    <script>
+      const stompUrl = document.getElementById("stompUrl").value;
+      const roomId = document.getElementById("roomId").value;
+      initRoom(stompUrl, roomId).then((room) => {
+        room.subscribe();
+        room.join();
+      });
+    </script>
+  </body>
 </html>
