@@ -5,7 +5,6 @@ import jp.co.sunarch.telework.kokaon.usecase.JoinMemberUseCase;
 import jp.co.sunarch.telework.kokaon.usecase.LeaveMemberUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -29,7 +28,6 @@ import java.util.stream.Stream;
  */
 @Controller
 @RequiredArgsConstructor
-@Slf4j
 public class RoomController {
   private final RoomRepository roomRepository;
   private final UserRepository userRepository;
