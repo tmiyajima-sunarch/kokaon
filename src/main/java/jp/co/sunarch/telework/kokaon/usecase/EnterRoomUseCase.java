@@ -1,6 +1,6 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
-import jp.co.sunarch.telework.kokaon.event.MemberLeftEvent;
+import jp.co.sunarch.telework.kokaon.event.MemberEnteredEvent;
 import jp.co.sunarch.telework.kokaon.event.RoomEventPublisher;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
@@ -10,14 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * ルームから退室する。
+ * ルームに参加する。
  *
  * @author takeshi
  */
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class LeaveMemberUseCase {
+public class EnterRoomUseCase {
   private final RoomRepository roomRepository;
   private final RoomEventPublisher roomEventPublisher;
 
@@ -25,15 +25,15 @@ public class LeaveMemberUseCase {
     var room = this.roomRepository.findById(roomId)
         .orElseThrow(() -> new RoomNotFoundException(roomId));
 
-    if (!room.isMember(user)) {
+    if (room.isMember(user)) {
       return;
     }
 
-    var newRoom = room.leave(user);
+    var newRoom = room.enter(user);
     this.roomRepository.save(newRoom);
 
-    log.info("Member left: room={}, user={}", roomId.value(), user.getId().value());
+    log.info("Member entered: room={}, user={}", roomId.value(), user.getId().value());
 
-    this.roomEventPublisher.publish(MemberLeftEvent.of(roomId, user));
+    this.roomEventPublisher.publish(MemberEnteredEvent.of(roomId, user));
   }
 }

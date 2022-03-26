@@ -26,8 +26,8 @@ import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
 import jp.co.sunarch.telework.kokaon.model.UserRepository;
-import jp.co.sunarch.telework.kokaon.usecase.JoinMemberUseCase;
-import jp.co.sunarch.telework.kokaon.usecase.LeaveMemberUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.EnterRoomUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
@@ -41,8 +41,8 @@ public class RoomController {
   private final UserRepository userRepository;
   private final AudioRepository audioRepository;
 
-  private final JoinMemberUseCase joinMemberUseCase;
-  private final LeaveMemberUseCase leaveMemberUseCase;
+  private final EnterRoomUseCase enterRoomUseCase;
+  private final LeaveRoomUseCase leaveRoomUseCase;
 
   @GetMapping("/room")
   public String redirectToRoom(@RequestParam String id) {
@@ -68,15 +68,15 @@ public class RoomController {
     return new AppJson(UserJson.of(user), room);
   }
 
-  @MessageMapping("/room/{id}/join")
-  public void join(@DestinationVariable String id, SimpMessageHeaderAccessor headerAccessor, Principal principal) {
+  @MessageMapping("/room/{id}/enter")
+  public void enter(@DestinationVariable String id, SimpMessageHeaderAccessor headerAccessor, Principal principal) {
     var roomId = new RoomId(id);
     var user = this.getUser(principal);
 
-    LeaveOnCloseWebSocketHandlerDecorator.onJoin(
+    LeaveOnCloseWebSocketHandlerDecorator.onEnter(
         Objects.requireNonNull(headerAccessor.getSessionAttributes()), roomId);
 
-    this.joinMemberUseCase.execute(roomId, user);
+    this.enterRoomUseCase.execute(roomId, user);
   }
 
   @MessageMapping("/room/{id}/leave")
@@ -87,7 +87,7 @@ public class RoomController {
     LeaveOnCloseWebSocketHandlerDecorator.onLeave(
         Objects.requireNonNull(headerAccessor.getSessionAttributes()), roomId);
 
-    this.leaveMemberUseCase.execute(roomId, user);
+    this.leaveRoomUseCase.execute(roomId, user);
   }
 
   private User getUser(Principal principal) {

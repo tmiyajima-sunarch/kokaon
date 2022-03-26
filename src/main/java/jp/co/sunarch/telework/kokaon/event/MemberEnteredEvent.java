@@ -8,12 +8,12 @@ import lombok.Value;
  * @author takeshi
  */
 @Value
-public class MemberJoinedEvent implements RoomEvent {
+public class MemberEnteredEvent implements RoomEvent {
   String roomId;
   String memberId;
   String memberNickname;
 
-  public static MemberJoinedEvent of(RoomId roomId, User user) {
-    return new MemberJoinedEvent(roomId.value(), user.getId().value(), user.getNickname());
+  public static MemberEnteredEvent of(RoomId roomId, User user) {
+    return new MemberEnteredEvent(roomId.value(), user.getId().value(), user.getNickname());
   }
 }

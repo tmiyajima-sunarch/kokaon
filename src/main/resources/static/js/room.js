@@ -137,8 +137,8 @@ class Room {
     this.emitter.off(type, callback);
   }
 
-  join() {
-    this.stompClient.send(`/app/room/${this.roomId}/join`);
+  enter() {
+    this.stompClient.send(`/app/room/${this.roomId}/enter`);
   }
 
   close() {
@@ -158,7 +158,7 @@ function reducer(state, message) {
   }
 
   switch (message['@type']) {
-    case 'MemberJoinedEvent': {
+    case 'MemberEnteredEvent': {
       const { memberId, memberNickname } = message;
       if (state.room.members.some(member => member.id === memberId)) {
         return state;

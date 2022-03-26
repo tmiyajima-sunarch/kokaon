@@ -1,6 +1,6 @@
 package jp.co.sunarch.telework.kokaon.controller;
 
-import jp.co.sunarch.telework.kokaon.usecase.LeaveMemberUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +20,7 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Autowired
-  private ObjectProvider<LeaveMemberUseCase> leaveMemberUseCase;
+  private ObjectProvider<LeaveRoomUseCase> leaveRoomUseCaseProvider;
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -41,7 +41,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registry.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
       @Override
       public WebSocketHandler decorate(WebSocketHandler handler) {
-        return new LeaveOnCloseWebSocketHandlerDecorator(handler, leaveMemberUseCase.getObject());
+        return new LeaveOnCloseWebSocketHandlerDecorator(handler, leaveRoomUseCaseProvider.getObject());
       }
     });
   }

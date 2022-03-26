@@ -2,7 +2,7 @@ package jp.co.sunarch.telework.kokaon.controller;
 
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.User;
-import jp.co.sunarch.telework.kokaon.usecase.LeaveMemberUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -22,12 +22,12 @@ import java.util.function.Consumer;
 public class LeaveOnCloseWebSocketHandlerDecorator extends WebSocketHandlerDecorator {
   private static final String SESSION_KEY = "LeaveOnCloseWebSocketHandlerDecorator";
 
-  private final LeaveMemberUseCase leaveMemberUseCase;
+  private final LeaveRoomUseCase leaveRoomUseCase;
   private final Rooms rooms = new Rooms();
 
-  public LeaveOnCloseWebSocketHandlerDecorator(WebSocketHandler delegate, LeaveMemberUseCase leaveMemberUseCase) {
+  public LeaveOnCloseWebSocketHandlerDecorator(WebSocketHandler delegate, LeaveRoomUseCase leaveMemberUseCase) {
     super(delegate);
-    this.leaveMemberUseCase = leaveMemberUseCase;
+    this.leaveRoomUseCase = leaveMemberUseCase;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class LeaveOnCloseWebSocketHandlerDecorator extends WebSocketHandlerDecor
     var user = this.getUserFromSession(session);
     if (user != null && !this.rooms.isEmpty()) {
       this.rooms.forEach(roomId -> {
-        this.leaveMemberUseCase.execute(roomId, user);
+        this.leaveRoomUseCase.execute(roomId, user);
       });
     }
     super.afterConnectionClosed(session, closeStatus);
@@ -69,7 +69,7 @@ public class LeaveOnCloseWebSocketHandlerDecorator extends WebSocketHandlerDecor
     return (User) principal;
   }
 
-  private void onJoin(RoomId roomId) {
+  private void onEnter(RoomId roomId) {
     this.rooms.add(roomId);
   }
 
@@ -77,10 +77,10 @@ public class LeaveOnCloseWebSocketHandlerDecorator extends WebSocketHandlerDecor
     this.rooms.remove(roomId);
   }
 
-  public static void onJoin(Map<String, Object> sessionAttributes, RoomId roomId) {
+  public static void onEnter(Map<String, Object> sessionAttributes, RoomId roomId) {
     var self = (LeaveOnCloseWebSocketHandlerDecorator) sessionAttributes.get(SESSION_KEY);
     if (self != null) {
-      self.onJoin(roomId);
+      self.onEnter(roomId);
     }
   }
 

@@ -28,7 +28,7 @@ public class Room {
     return new Room(id, name, owner.getId(), RoomState.OPEN, Set.of(), Set.of());
   }
 
-  public Room join(User user) {
+  public Room enter(User user) {
     this.checkStateIsOpen();
     return this.withMemberIds(Sets.add(this.memberIds, user.getId()));
   }
