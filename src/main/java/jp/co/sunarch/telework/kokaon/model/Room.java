@@ -57,7 +57,7 @@ public class Room {
   }
 
   public boolean isMember(User user) {
-    return this.ownerId.equals(user.getId()) || this.memberIds.contains(user.getId());
+    return this.memberIds.contains(user.getId());
   }
 
   private void checkStateIsOpen() {

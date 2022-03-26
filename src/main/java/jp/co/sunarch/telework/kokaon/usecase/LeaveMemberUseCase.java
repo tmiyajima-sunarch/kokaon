@@ -25,6 +25,10 @@ public class LeaveMemberUseCase {
     var room = this.roomRepository.findById(roomId)
         .orElseThrow(() -> new RoomNotFoundException(roomId));
 
+    if (!room.isMember(user)) {
+      return;
+    }
+
     var newRoom = room.leave(user);
     this.roomRepository.save(newRoom);
 

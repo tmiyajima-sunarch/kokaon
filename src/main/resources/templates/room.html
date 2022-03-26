@@ -37,10 +37,6 @@
             type: Object,
             required: true,
           },
-          isOwner: {
-            type: Boolean,
-            required: false,
-          },
           isMe: {
             type: Boolean,
             required: false,
@@ -50,7 +46,6 @@
         template: `
           <li>
             {{ user.nickname }}
-            <span v-if="isOwner">Owner</span>
             <span v-if="isMe">Me</span>
           </li>
         `
@@ -60,10 +55,6 @@
         props: {
           members: {
             type: Array,
-            required: true,
-          },
-          owner: {
-            type: Object,
             required: true,
           },
           me: {
@@ -84,7 +75,6 @@
 
         template: `
           <ul>
-            <member-item :user="owner" is-owner />
             <template v-for="member in members" :key="member.id">
               <member-item :user="member" :is-me="isMe(member)" />
             </template>
@@ -136,7 +126,8 @@
         template: `
           <div>
             <template v-if="state">
-              <member-list :members="members" :owner="owner" :me="me" />
+              <h3>Owner: {{owner.nickname}}</h3>
+              <member-list :members="members" :me="me" />
             </template>
             <details>
               <summary>$data</summary>
