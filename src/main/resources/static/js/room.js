@@ -7,7 +7,7 @@
 
 class EventEmitter {
   /**
-   * @type {Record<string, Set<EventCallback>}
+   * @type {Record<string, Set<EventCallback>>}
    */
   callbacks = {};
 
@@ -191,8 +191,24 @@ function reducer(state, message) {
     }
 
     case 'AudioAddedEvent': {
-      // TODO
-      return state;
+      const { audioId, audioName, audioUrl } = message;
+      if (state.room.audios.some(audio => audio.id === audioId)) {
+        return state;
+      }
+      return {
+        ...state,
+        room: {
+          ...state.room,
+          audios: [
+            ...state.room.audios,
+            {
+              id: audioId,
+              name: audioName,
+              url: audioUrl,
+            },
+          ],
+        }
+      };
     }
 
     case 'AudioRemovedEvent': {

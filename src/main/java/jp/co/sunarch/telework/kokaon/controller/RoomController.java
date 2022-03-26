@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import jp.co.sunarch.telework.kokaon.model.Audio;
 import jp.co.sunarch.telework.kokaon.model.AudioRepository;
@@ -26,8 +29,10 @@ import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import jp.co.sunarch.telework.kokaon.model.User;
 import jp.co.sunarch.telework.kokaon.model.UserRepository;
+import jp.co.sunarch.telework.kokaon.usecase.AddAudioUseCase;
 import jp.co.sunarch.telework.kokaon.usecase.EnterRoomUseCase;
 import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
@@ -43,6 +48,7 @@ public class RoomController {
 
   private final EnterRoomUseCase enterRoomUseCase;
   private final LeaveRoomUseCase leaveRoomUseCase;
+  private final AddAudioUseCase addAudioUseCase;
 
   @GetMapping("/room")
   public String redirectToRoom(@RequestParam String id) {
@@ -90,6 +96,18 @@ public class RoomController {
     this.leaveRoomUseCase.execute(roomId, user);
   }
 
+  @PostMapping("/room/{id}/audios")
+  public ResponseEntity<Void> addAudio(@PathVariable String id, AddAudioForm addAudioForm, Principal principal) {
+    var roomId = new RoomId(id);
+    var user = this.getUser(principal);
+
+    // TODO バリデーション
+
+    this.addAudioUseCase.execute(roomId, user, addAudioForm.getAudioFile(), addAudioForm.getName(), this::toUrl);
+
+    return ResponseEntity.ok().build();
+  }
+
   private User getUser(Principal principal) {
     var auth = (Authentication) principal;
     return (User) auth.getPrincipal();
@@ -108,8 +126,13 @@ public class RoomController {
               .sorted(Comparator.comparing(Audio::getName))
               .toList();
 
-          return RoomJson.of(room, owner, members, audios, (audio) -> "TODO");
+          return RoomJson.of(room, owner, members, audios, this::toUrl);
         });
+  }
+
+  private String toUrl(Audio audio) {
+    // TODO
+    return "TODO";
   }
 
   @Value
@@ -156,5 +179,11 @@ public class RoomController {
     static AudioJson of(Audio audio, String url) {
       return new AudioJson(audio.getId().value(), audio.getName(), url);
     }
+  }
+
+  @Data
+  static class AddAudioForm {
+    String name;
+    MultipartFile audioFile;
   }
 }

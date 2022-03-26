@@ -18,6 +18,7 @@
 
     <div id="root"></div>
 
+    <input type="hidden" id="csrf" th:value="${_csrf.token}" />
     <input type="hidden" id="stompUrl" th:value="@{/stomp}" />
     <input type="hidden" id="roomId" th:value="${room.id.value()}" />
 
@@ -26,6 +27,7 @@
     <script src="https://unpkg.com/vue@3.2.31"></script>
     <script th:src="@{/js/room.js}"></script>
     <script>
+      const csrfToken = document.getElementById("csrf").value;
       const stompUrl = document.getElementById("stompUrl").value;
       const roomId = document.getElementById("roomId").value;
       const socket = new SockJS(stompUrl);
@@ -82,9 +84,100 @@
         `
       }
 
+      const AddAudioForm = {
+        data() {
+          return {
+            name: '',
+            audioFile: null,
+          };
+        },
+
+        computed: {
+          action() {
+            return `${location.href}/audios`;
+          }
+        },
+
+        methods: {
+          onFileChange(event) {
+            event.preventDefault();
+            this.audioFile = event.target.files[0];
+          },
+          onSubmit(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('name', this.name);
+            formData.append('audioFile', this.audioFile);
+
+            const options = {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-CSRF-TOKEN': csrfToken,
+              },
+            };
+
+            fetch(this.action, options);
+
+            this.name = '';
+            this.audioFile = null;
+            this.$refs.form.reset();
+          }
+        },
+
+        template: `
+          <form class="pure-form" @submit="onSubmit" ref="form">
+            <fieldset>
+              <input type="text" name="name" placeholder="効果音の名前" v-model="name"/>
+              <input type="file" name="audioFile" accept="audio/*" @change="onFileChange"/>
+              <button type="submit" class="pure-button pure-button-primary">アップロード</button>
+            </fieldset>
+          </form>
+        `
+      };
+
+      const AudioItem = {
+        props: {
+          audio: {
+            type: Object,
+            required: true,
+          },
+        },
+
+        template: `
+          <li>
+            {{ audio.name }}
+          </li>
+        `
+      };
+
+      const AudioList = {
+        props: {
+          audios: {
+            type: Array,
+            required: true,
+          },
+        },
+
+        components: {
+          'audio-item': AudioItem,
+        },
+
+        template: `
+          <ul>
+            <template v-for="audio in audios" :key="audio.id">
+              <audio-item :audio="audio" />
+            </template>
+          </ul>
+        `
+      }
+
       const App = {
         components: {
           'member-list': MemberList,
+          'audio-list': AudioList,
+          'add-audio-form': AddAudioForm,
         },
 
         data() {
@@ -121,13 +214,21 @@
           members() {
             return this.state ? this.state.room.members : null;
           },
+          audios() {
+            return this.state ? this.state.room.audios : null;
+          }
         },
 
         template: `
           <div>
             <template v-if="state">
-              <h3>Owner: {{owner.nickname}}</h3>
+              <h3>Owner</h3>
+              <p>{{owner.nickname}}</p>
+              <h3>Members</h3>
               <member-list :members="members" :me="me" />
+              <h3>Audios</h3>
+              <audio-list :audios="audios" />
+              <add-audio-form/>
             </template>
             <details>
               <summary>$data</summary>
