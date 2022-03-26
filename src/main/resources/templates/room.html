@@ -50,7 +50,7 @@
             {{ user.nickname }}
             <span v-if="isMe">Me</span>
           </li>
-        `
+        `,
       };
 
       const MemberList = {
@@ -66,7 +66,7 @@
         },
 
         components: {
-          'member-item': MemberItem,
+          "member-item": MemberItem,
         },
 
         methods: {
@@ -81,13 +81,13 @@
               <member-item :user="member" :is-me="isMe(member)" />
             </template>
           </ul>
-        `
-      }
+        `,
+      };
 
       const AddAudioForm = {
         data() {
           return {
-            name: '',
+            name: "",
             audioFile: null,
           };
         },
@@ -95,7 +95,7 @@
         computed: {
           action() {
             return `${location.href}/audios`;
-          }
+          },
         },
 
         methods: {
@@ -107,23 +107,23 @@
             event.preventDefault();
 
             const formData = new FormData();
-            formData.append('name', this.name);
-            formData.append('audioFile', this.audioFile);
+            formData.append("name", this.name);
+            formData.append("audioFile", this.audioFile);
 
             const options = {
-              method: 'POST',
+              method: "POST",
               body: formData,
               headers: {
-                'X-CSRF-TOKEN': csrfToken,
+                "X-CSRF-TOKEN": csrfToken,
               },
             };
 
             fetch(this.action, options);
 
-            this.name = '';
+            this.name = "";
             this.audioFile = null;
             this.$refs.form.reset();
-          }
+          },
         },
 
         template: `
@@ -134,7 +134,7 @@
               <button type="submit" class="pure-button pure-button-primary">アップロード</button>
             </fieldset>
           </form>
-        `
+        `,
       };
 
       const AudioItem = {
@@ -145,47 +145,68 @@
           },
         },
 
-        inject: ['room'],
+        inject: ["room"],
 
         data() {
           return {
-            instance: null,
             canPlay: false,
+            isRejected: false,
             isPlaying: false,
             handlePlay: null,
           };
         },
 
         mounted() {
-          this.instance = new Audio(this.audio.url);
-          this.instance.addEventListener('canplay', () => {
+          this.instance.addEventListener("canplay", () => {
             this.canPlay = true;
+            this.instance.play().catch(() => {
+              this.isRejected = true;
+            });
+            this.instance.pause();
           });
-          this.instance.addEventListener('play', () => {
+          this.instance.addEventListener("play", () => {
             this.isPlaying = true;
           });
-          this.instance.addEventListener('pause', () => {
+          this.instance.addEventListener("pause", () => {
             this.isPlaying = false;
           });
 
           this.handlePlay = (audioId) => {
             if (this.audio.id === audioId && this.instance !== null) {
-              console.log('play:', this.audio.name, this.audio.id);
-              this.instance.play();
+              console.log("play:", this.audio.name, this.audio.id);
+              this.instance
+                .play()
+                .then(() => {
+                  this.isRejected = false;
+                })
+                .catch(() => {
+                  this.isRejected = true;
+                });
             }
           };
 
-          this.room.on('play', this.handlePlay);
+          this.room.on("play", this.handlePlay);
         },
 
         beforeUnmount() {
           if (this.handlePlay) {
-            this.room.off('play', this.handlePlay);
+            this.room.off("play", this.handlePlay);
             this.handlePlay = null;
           }
         },
 
+        computed: {
+          instance() {
+            return this.$refs.instance;
+          },
+        },
+
         methods: {
+          allow() {
+            this.instance.play();
+            this.instance.pause();
+            this.isRejected = false;
+          },
           play() {
             this.room.play(this.audio.id);
           },
@@ -196,9 +217,11 @@
             {{ audio.name }}
             {{ canPlay }}
             {{ isPlaying }}
-            <button @click="play">Play</button>
+            <audio ref="instance" :src="audio.url" />
+            <button v-if="isRejected" @click="allow">再生を許可してください</button>
+            <button v-else @click="play">Play</button>
           </li>
-        `
+        `,
       };
 
       const AudioList = {
@@ -210,7 +233,7 @@
         },
 
         components: {
-          'audio-item': AudioItem,
+          "audio-item": AudioItem,
         },
 
         template: `
@@ -219,14 +242,14 @@
               <audio-item :audio="audio" />
             </template>
           </ul>
-        `
-      }
+        `,
+      };
 
       const App = {
         components: {
-          'member-list': MemberList,
-          'audio-list': AudioList,
-          'add-audio-form': AddAudioForm,
+          "member-list": MemberList,
+          "audio-list": AudioList,
+          "add-audio-form": AddAudioForm,
         },
 
         provide() {
@@ -271,7 +294,7 @@
           },
           audios() {
             return this.state ? this.state.room.audios : null;
-          }
+          },
         },
 
         template: `
@@ -290,7 +313,7 @@
               <pre>{{ $data }}</pre>
             </details>
           </div>
-        `
+        `,
       };
 
       const app = Vue.createApp(App);

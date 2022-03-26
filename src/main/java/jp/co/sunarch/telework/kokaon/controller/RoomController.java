@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -17,6 +18,7 @@ import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -116,7 +118,7 @@ public class RoomController {
   public ResponseEntity<byte[]> getAudio(@PathVariable String id, @PathVariable String audioId) {
     var _audioId = new AudioId(audioId);
     return this.audioRepository.findContentById(_audioId)
-      .map(bytes -> ResponseEntity.ok(bytes))
+      .map(bytes -> ResponseEntity.ok().contentType(MediaType.asMediaType(MimeType.valueOf("audio/mp3"))).body(bytes))
       .orElse(ResponseEntity.notFound().build());
   }
 
