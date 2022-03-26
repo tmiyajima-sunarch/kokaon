@@ -44,4 +44,9 @@ public class InMemoryAudioRepository implements AudioRepository {
   public Optional<Audio> findById(AudioId audioId) {
     return Optional.ofNullable(this.audios.get(audioId));
   }
+
+  @Override
+  public Optional<byte[]> findContentById(AudioId audioId) {
+    return Optional.ofNullable(this.resources.get(audioId));
+  }
 }

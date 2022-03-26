@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import jp.co.sunarch.telework.kokaon.model.Audio;
+import jp.co.sunarch.telework.kokaon.model.AudioId;
 import jp.co.sunarch.telework.kokaon.model.AudioRepository;
 import jp.co.sunarch.telework.kokaon.model.Room;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
@@ -103,9 +105,17 @@ public class RoomController {
 
     // TODO バリデーション
 
-    this.addAudioUseCase.execute(roomId, user, addAudioForm.getAudioFile(), addAudioForm.getName(), this::toUrl);
+    this.addAudioUseCase.execute(roomId, user, addAudioForm.getAudioFile(), addAudioForm.getName(), new AudioUrlResolver(roomId));
 
     return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/room/{id}/audios/{audioId}")
+  public ResponseEntity<byte[]> getAudio(@PathVariable String id, @PathVariable String audioId) {
+    var _audioId = new AudioId(audioId);
+    return this.audioRepository.findContentById(_audioId)
+      .map(bytes -> ResponseEntity.ok(bytes))
+      .orElse(ResponseEntity.notFound().build());
   }
 
   private User getUser(Principal principal) {
@@ -126,13 +136,20 @@ public class RoomController {
               .sorted(Comparator.comparing(Audio::getName))
               .toList();
 
-          return RoomJson.of(room, owner, members, audios, this::toUrl);
+          return RoomJson.of(room, owner, members, audios, new AudioUrlResolver(roomId));
         });
   }
 
-  private String toUrl(Audio audio) {
-    // TODO
-    return "TODO";
+  @RequiredArgsConstructor
+  private static class AudioUrlResolver implements Function<Audio, String> {
+    private final RoomId roomId;
+
+    @Override
+    public String apply(Audio audio) {
+      var uriComponent = UriComponentsBuilder.fromPath("/room/{id}/audios/{audioId}")
+      .buildAndExpand(roomId.value(), audio.getId().value());
+      return uriComponent.toUriString();
+    }
   }
 
   @Value

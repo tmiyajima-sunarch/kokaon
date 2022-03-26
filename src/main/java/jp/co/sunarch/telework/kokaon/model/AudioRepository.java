@@ -17,4 +17,6 @@ public interface AudioRepository {
   void deleteById(AudioId audioId);
 
   Optional<Audio> findById(AudioId audioId);
+
+  Optional<byte[]> findContentById(AudioId audioId);
 }

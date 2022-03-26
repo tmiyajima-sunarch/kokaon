@@ -148,6 +148,7 @@
         template: `
           <li>
             {{ audio.name }}
+            <audio controls :src="audio.url" />
           </li>
         `
       };
