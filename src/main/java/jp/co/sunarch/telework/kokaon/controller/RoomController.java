@@ -1,27 +1,35 @@
 package jp.co.sunarch.telework.kokaon.controller;
 
-import jp.co.sunarch.telework.kokaon.model.*;
-import jp.co.sunarch.telework.kokaon.usecase.JoinMemberUseCase;
-import jp.co.sunarch.telework.kokaon.usecase.LeaveMemberUseCase;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.security.Principal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
+import jp.co.sunarch.telework.kokaon.model.Audio;
+import jp.co.sunarch.telework.kokaon.model.AudioRepository;
+import jp.co.sunarch.telework.kokaon.model.Room;
+import jp.co.sunarch.telework.kokaon.model.RoomId;
+import jp.co.sunarch.telework.kokaon.model.RoomRepository;
+import jp.co.sunarch.telework.kokaon.model.User;
+import jp.co.sunarch.telework.kokaon.model.UserRepository;
+import jp.co.sunarch.telework.kokaon.usecase.JoinMemberUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.LeaveMemberUseCase;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 /**
  * @author takeshi
@@ -42,17 +50,22 @@ public class RoomController {
   }
 
   @GetMapping("/room/{id}")
-  public String getRoom(@PathVariable String id, Model model, @AuthenticationPrincipal User user) {
+  public String getRoom(@PathVariable String id, Model model) {
     var roomId = new RoomId(id);
-    return this.getRoomDetail(roomId)
-        .map(roomDetail -> {
-          model.addAttribute("user", user);
-          model.addAttribute("room", roomDetail.getRoom());
-          model.addAttribute("members", roomDetail.getMembers());
-          model.addAttribute("audios", roomDetail.getAudios());
+    return this.roomRepository.findById(roomId)
+        .map(room -> {
+          model.addAttribute("room", room);
           return "room";
-        })
-        .orElse("redirect:/");
+        }).orElse("redirect:/");
+  }
+
+  @SubscribeMapping("/room/{id}")
+  public AppJson onSubscribe(@DestinationVariable String id, Principal principal) {
+    var roomId = new RoomId(id);
+    var user = this.getUser(principal);
+
+    var room = this.getRoomJson(roomId).get();
+    return new AppJson(UserJson.of(user), room);
   }
 
   @MessageMapping("/room/{id}/join")
@@ -82,29 +95,66 @@ public class RoomController {
     return (User) auth.getPrincipal();
   }
 
-  private Optional<RoomDetail> getRoomDetail(RoomId roomId) {
+  private Optional<RoomJson> getRoomJson(RoomId roomId) {
     return this.roomRepository.findById(roomId)
         .map(room -> {
-          var members = Stream.concat(
-                  this.userRepository.findById(room.getOwnerId()).stream(),
-                  room.getMemberIds().stream()
-                      .flatMap(memberId -> this.userRepository.findById(memberId).stream())
-                      .sorted(Comparator.comparing(User::getNickname)))
+          var owner = this.userRepository.findById(room.getOwnerId()).get();
+          var members = room.getMemberIds().stream()
+              .flatMap(memberId -> this.userRepository.findById(memberId).stream())
+              .sorted(Comparator.comparing(User::getNickname))
               .toList();
-
           var audios = room.getAudioIds().stream()
               .flatMap(audioId -> this.audioRepository.findById(audioId).stream())
               .sorted(Comparator.comparing(Audio::getName))
               .toList();
 
-          return new RoomDetail(room, members, audios);
+          return RoomJson.of(room, owner, members, audios, (audio) -> "TODO");
         });
   }
 
   @Value
-  static class RoomDetail {
-    Room room;
-    List<User> members;
-    List<Audio> audios;
+  static class AppJson {
+    UserJson me;
+    RoomJson room;
+  }
+
+  @Value
+  static class RoomJson {
+    String id;
+    String name;
+    UserJson owner;
+    List<UserJson> members;
+    List<AudioJson> audios;
+
+    static RoomJson of(Room room, User owner, Collection<User> members, Collection<Audio> audios,
+        Function<Audio, String> toUrl) {
+      return new RoomJson(
+          room.getId().value(),
+          room.getName(),
+          UserJson.of(owner),
+          members.stream().map(UserJson::of).toList(),
+          audios.stream().map(audio -> AudioJson.of(audio, toUrl.apply(audio))).toList());
+    }
+  }
+
+  @Value
+  static class UserJson {
+    String id;
+    String nickname;
+
+    static UserJson of(User user) {
+      return new UserJson(user.getId().value(), user.getNickname());
+    }
+  }
+
+  @Value
+  static class AudioJson {
+    String id;
+    String name;
+    String url;
+
+    static AudioJson of(Audio audio, String url) {
+      return new AudioJson(audio.getId().value(), audio.getName(), url);
+    }
   }
 }
