@@ -113,6 +113,11 @@ class Room {
   handleMessage(message) {
     check(this.state !== null, 'Illegal state: state is not initialized');
 
+    if (message['@type'] === 'AudioPlayedEvent') {
+      this.emitter.emit('play', message.audioId);
+      return;
+    }
+
     const newState = reducer(this.state, message);
 
     if (this.state !== newState) {
@@ -139,6 +144,10 @@ class Room {
 
   enter() {
     this.stompClient.send(`/app/room/${this.roomId}/enter`);
+  }
+
+  play(audioId) {
+    this.stompClient.send(`/app/room/${this.roomId}/play/${audioId}`)
   }
 
   close() {

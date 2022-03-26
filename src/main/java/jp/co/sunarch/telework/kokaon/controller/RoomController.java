@@ -11,6 +11,7 @@ import java.util.function.Function;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import jp.co.sunarch.telework.kokaon.event.AudioPlayedEvent;
 import jp.co.sunarch.telework.kokaon.model.Audio;
 import jp.co.sunarch.telework.kokaon.model.AudioId;
 import jp.co.sunarch.telework.kokaon.model.AudioRepository;
@@ -116,6 +118,15 @@ public class RoomController {
     return this.audioRepository.findContentById(_audioId)
       .map(bytes -> ResponseEntity.ok(bytes))
       .orElse(ResponseEntity.notFound().build());
+  }
+
+  @MessageMapping("/room/{id}/play/{audioId}")
+  @SendTo("/topic/room/{id}")
+  public AudioPlayedEvent playAudio(@DestinationVariable String id, @DestinationVariable String audioId, Principal principal) {
+    var roomId = new RoomId(id);
+    var _audioId = new AudioId(audioId);
+    var user = this.getUser(principal);
+    return AudioPlayedEvent.of(roomId, _audioId, user);
   }
 
   private User getUser(Principal principal) {

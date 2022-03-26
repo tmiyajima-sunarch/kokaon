@@ -145,10 +145,58 @@
           },
         },
 
+        inject: ['room'],
+
+        data() {
+          return {
+            instance: null,
+            canPlay: false,
+            isPlaying: false,
+            handlePlay: null,
+          };
+        },
+
+        mounted() {
+          this.instance = new Audio(this.audio.url);
+          this.instance.addEventListener('canplay', () => {
+            this.canPlay = true;
+          });
+          this.instance.addEventListener('play', () => {
+            this.isPlaying = true;
+          });
+          this.instance.addEventListener('pause', () => {
+            this.isPlaying = false;
+          });
+
+          this.handlePlay = (audioId) => {
+            if (this.audio.id === audioId && this.instance !== null) {
+              console.log('play:', this.audio.name, this.audio.id);
+              this.instance.play();
+            }
+          };
+
+          this.room.on('play', this.handlePlay);
+        },
+
+        beforeUnmount() {
+          if (this.handlePlay) {
+            this.room.off('play', this.handlePlay);
+            this.handlePlay = null;
+          }
+        },
+
+        methods: {
+          play() {
+            this.room.play(this.audio.id);
+          },
+        },
+
         template: `
           <li>
             {{ audio.name }}
-            <audio controls :src="audio.url" />
+            {{ canPlay }}
+            {{ isPlaying }}
+            <button @click="play">Play</button>
           </li>
         `
       };
@@ -179,6 +227,12 @@
           'member-list': MemberList,
           'audio-list': AudioList,
           'add-audio-form': AddAudioForm,
+        },
+
+        provide() {
+          return {
+            room: Vue.computed(() => this.room),
+          };
         },
 
         data() {
@@ -239,7 +293,9 @@
         `
       };
 
-      Vue.createApp(App).mount("#root");
+      const app = Vue.createApp(App);
+      app.config.unwrapInjectedRef = true;
+      app.mount("#root");
     </script>
   </body>
 </html>
