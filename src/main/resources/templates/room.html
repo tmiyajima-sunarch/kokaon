@@ -14,21 +14,139 @@
     <meta name="author" content="" />
   </head>
   <body>
-    <h1>Room: [[${room.name}]]</h1>
+    <h1>Room: [[${room.name}]] <small>[[${room.id.value()}]]</small></h1>
+
+    <div id="root"></div>
 
     <input type="hidden" id="stompUrl" th:value="@{/stomp}" />
     <input type="hidden" id="roomId" th:value="${room.id.value()}" />
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/webstomp-client@1/dist/webstomp.min.js"></script>
+    <script src="https://unpkg.com/vue@3.2.31"></script>
     <script th:src="@{/js/room.js}"></script>
     <script>
       const stompUrl = document.getElementById("stompUrl").value;
       const roomId = document.getElementById("roomId").value;
-      initRoom(stompUrl, roomId).then((room) => {
-        room.init();
-        room.join();
-      });
+      const socket = new SockJS(stompUrl);
+      const stompClient = webstomp.over(socket);
+
+      const MemberItem = {
+        props: {
+          user: {
+            type: Object,
+            required: true,
+          },
+          isOwner: {
+            type: Boolean,
+            required: false,
+          },
+          isMe: {
+            type: Boolean,
+            required: false,
+          },
+        },
+
+        template: `
+          <li>
+            {{ user.nickname }}
+            <span v-if="isOwner">Owner</span>
+            <span v-if="isMe">Me</span>
+          </li>
+        `
+      };
+
+      const MemberList = {
+        props: {
+          members: {
+            type: Array,
+            required: true,
+          },
+          owner: {
+            type: Object,
+            required: true,
+          },
+          me: {
+            type: Object,
+            required: true,
+          },
+        },
+
+        components: {
+          'member-item': MemberItem,
+        },
+
+        methods: {
+          isMe(user) {
+            return user.id === this.me.id;
+          },
+        },
+
+        template: `
+          <ul>
+            <member-item :user="owner" is-owner />
+            <template v-for="member in members" :key="member.id">
+              <member-item :user="member" :is-me="isMe(member)" />
+            </template>
+          </ul>
+        `
+      }
+
+      const App = {
+        components: {
+          'member-list': MemberList,
+        },
+
+        data() {
+          return {
+            state: null,
+            room: null,
+          };
+        },
+
+        mounted() {
+          stompClient.connect({}, () => {
+            this.room = new Room(stompClient, roomId);
+            this.room.on("change", (state) => {
+              this.state = state;
+            });
+            this.room.init();
+            this.room.join();
+          });
+        },
+
+        beforeUnmount() {
+          if (this.room) {
+            this.room.close();
+          }
+        },
+
+        computed: {
+          me() {
+            return this.state ? this.state.me : null;
+          },
+          owner() {
+            return this.state ? this.state.room.owner : null;
+          },
+          members() {
+            return this.state ? this.state.room.members : null;
+          },
+        },
+
+        template: `
+          <div>
+            <template v-if="state">
+              <member-list :members="members" :owner="owner" :me="me" />
+            </template>
+            <details>
+              <summary>$data</summary>
+              <pre>{{ $data }}</pre>
+            </details>
+          </div>
+        `
+      };
+
+      Vue.createApp(App).mount("#root");
     </script>
   </body>
 </html>
