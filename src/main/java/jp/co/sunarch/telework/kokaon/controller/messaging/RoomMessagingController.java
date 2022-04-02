@@ -1,5 +1,6 @@
-package jp.co.sunarch.telework.kokaon.controller;
+package jp.co.sunarch.telework.kokaon.controller.messaging;
 
+import jp.co.sunarch.telework.kokaon.controller.AudioUrlResolver;
 import jp.co.sunarch.telework.kokaon.event.AudioPlayedEvent;
 import jp.co.sunarch.telework.kokaon.model.*;
 import jp.co.sunarch.telework.kokaon.usecase.EnterRoomUseCase;
@@ -22,7 +23,7 @@ import java.util.function.Function;
  */
 @Controller
 @RequiredArgsConstructor
-public class RoomMessageController {
+public class RoomMessagingController {
   private final RoomRepository roomRepository;
   private final AudioRepository audioRepository;
 

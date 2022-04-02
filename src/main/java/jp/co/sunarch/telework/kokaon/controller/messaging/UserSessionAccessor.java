@@ -1,4 +1,4 @@
-package jp.co.sunarch.telework.kokaon.controller;
+package jp.co.sunarch.telework.kokaon.controller.messaging;
 
 import jp.co.sunarch.telework.kokaon.model.User;
 import org.springframework.lang.Nullable;

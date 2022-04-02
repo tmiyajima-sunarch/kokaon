@@ -1,4 +1,4 @@
-package jp.co.sunarch.telework.kokaon.controller;
+package jp.co.sunarch.telework.kokaon.controller.messaging;
 
 import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
 import org.springframework.beans.factory.ObjectProvider;
