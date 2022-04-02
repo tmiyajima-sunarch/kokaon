@@ -20,6 +20,8 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Autowired
+  private UserSessionAccessor userSessionAccessor;
+  @Autowired
   private ObjectProvider<LeaveRoomUseCase> leaveRoomUseCaseProvider;
 
   @Override
@@ -41,7 +43,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registry.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
       @Override
       public WebSocketHandler decorate(WebSocketHandler handler) {
-        return new LeaveOnCloseWebSocketHandlerDecorator(handler, leaveRoomUseCaseProvider.getObject());
+        return new LeaveOnCloseWebSocketHandlerDecorator(handler, userSessionAccessor, leaveRoomUseCaseProvider.getObject());
       }
     });
   }

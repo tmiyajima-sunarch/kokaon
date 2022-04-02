@@ -1,6 +1,9 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
-import jp.co.sunarch.telework.kokaon.model.*;
+import jp.co.sunarch.telework.kokaon.model.AudioId;
+import jp.co.sunarch.telework.kokaon.model.AudioRepository;
+import jp.co.sunarch.telework.kokaon.model.RoomId;
+import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +20,7 @@ public class RemoveAudioUseCase {
   private final RoomRepository roomRepository;
   private final AudioRepository audioRepository;
 
-  public void execute(RoomId roomId, User user, AudioId audioId) {
+  public void execute(RoomId roomId, AudioId audioId) {
     var room = this.roomRepository.findById(roomId)
         .orElseThrow(() -> new RoomNotFoundException(roomId));
 
@@ -25,9 +28,9 @@ public class RemoveAudioUseCase {
         .orElseThrow(() -> new RoomNotFoundException(roomId));
     this.audioRepository.deleteById(audioId);
 
-    var newRoom = room.removeAudioBy(user, audio);
+    var newRoom = room.removeAudio(audio);
     this.roomRepository.save(newRoom);
 
-    log.info("Audio removed: room={}, audio={}, user={}", roomId.value(), audioId.value(), user.getId().value());
+    log.info("Audio removed: room={}, audio={}", roomId.value(), audioId.value());
   }
 }

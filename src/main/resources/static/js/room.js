@@ -48,8 +48,8 @@ class EventEmitter {
 
 /**
  * @typedef AppState
- * @property {UserData} me
- * @property {RoomData} room
+ * @property {UserData | null} me
+ * @property {RoomData | null} room
  */
 /**
  * @typedef RoomData
@@ -73,13 +73,16 @@ class EventEmitter {
 
 class Room {
   /**
-   * @type {AppState | null}
+   * @type {AppState}
    */
-  state = null;
+  state = {
+    me: null,
+    room: null,
+  };
   /**
    * @type {any[]}
    */
-  buffur = [];
+  buffer = [];
 
   emitter = new EventEmitter();
 
@@ -92,12 +95,12 @@ class Room {
     // Receive initial state
     const appSubscription = this.stompClient.subscribe(`/app/room/${this.roomId}`, (message) => {
       appSubscription.unsubscribe();
-      this.state = JSON.parse(message.body);
+      this.state = { ...this.state, room: JSON.parse(message.body) };
       this.emitter.emit('change', this.state);
 
       // Consume buffered messages
-      this.buffur.forEach(message => this.handleMessage(message));
-      this.buffur = [];
+      this.buffer.forEach(message => this.handleMessage(message));
+      this.buffer = [];
     });
 
     // Receive events
@@ -105,14 +108,12 @@ class Room {
       if (this.state !== null) {
         this.handleMessage(JSON.parse(message.body));
       } else {
-        this.buffur.push(JSON.parse(message.body));
+        this.buffer.push(JSON.parse(message.body));
       }
     });
   }
 
   handleMessage(message) {
-    check(this.state !== null, 'Illegal state: state is not initialized');
-
     if (message['@type'] === 'AudioPlayedEvent') {
       this.emitter.emit('play', message.audioId);
       return;
@@ -142,8 +143,10 @@ class Room {
     this.emitter.off(type, callback);
   }
 
-  enter() {
-    this.stompClient.send(`/app/room/${this.roomId}/enter`);
+  enter(nickname) {
+    const me = { id: Math.random().toString(32).substring(2), nickname };
+    this.stompClient.send(`/app/room/${this.roomId}/enter`, JSON.stringify(me));
+    this.state = { ...this.state, me };
   }
 
   play(audioId) {
@@ -162,7 +165,7 @@ class Room {
  * @returns {AppState}
  */
 function reducer(state, message) {
-  if (state.room.id !== message.roomId) {
+  if (!state.room || state.room.id !== message.roomId) {
     return state;
   }
 

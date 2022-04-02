@@ -1,10 +1,8 @@
 package jp.co.sunarch.telework.kokaon.controller;
 
-import jp.co.sunarch.telework.kokaon.model.User;
 import jp.co.sunarch.telework.kokaon.usecase.CreateRoomUseCase;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -17,10 +15,10 @@ public class CreateRoomController {
   private final CreateRoomUseCase createRoomUseCase;
 
   @PostMapping("/room")
-  public String createRoom(CreateRoomForm createRoomForm, @AuthenticationPrincipal User user) {
+  public String createRoom(CreateRoomForm createRoomForm) {
     // TODO フォームのバリデーション
 
-    var room = this.createRoomUseCase.execute(user, createRoomForm.getName());
+    var room = this.createRoomUseCase.execute(createRoomForm.getName());
 
     return "redirect:/room/%s".formatted(room.getId().value());
   }
