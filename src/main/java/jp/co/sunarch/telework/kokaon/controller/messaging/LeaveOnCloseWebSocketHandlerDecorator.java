@@ -1,11 +1,7 @@
 package jp.co.sunarch.telework.kokaon.controller;
 
 import jp.co.sunarch.telework.kokaon.model.RoomId;
-import jp.co.sunarch.telework.kokaon.model.User;
 import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
-import org.springframework.lang.Nullable;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
@@ -22,11 +18,13 @@ import java.util.function.Consumer;
 public class LeaveOnCloseWebSocketHandlerDecorator extends WebSocketHandlerDecorator {
   private static final String SESSION_KEY = "LeaveOnCloseWebSocketHandlerDecorator";
 
+  private final UserSessionAccessor userSessionAccessor;
   private final LeaveRoomUseCase leaveRoomUseCase;
   private final Rooms rooms = new Rooms();
 
-  public LeaveOnCloseWebSocketHandlerDecorator(WebSocketHandler delegate, LeaveRoomUseCase leaveMemberUseCase) {
+  public LeaveOnCloseWebSocketHandlerDecorator(WebSocketHandler delegate, UserSessionAccessor userSessionAccessor, LeaveRoomUseCase leaveMemberUseCase) {
     super(delegate);
+    this.userSessionAccessor = userSessionAccessor;
     this.leaveRoomUseCase = leaveMemberUseCase;
   }
 
@@ -38,35 +36,13 @@ public class LeaveOnCloseWebSocketHandlerDecorator extends WebSocketHandlerDecor
 
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-    var user = this.getUserFromSession(session);
+    var user = this.userSessionAccessor.get(session.getAttributes());
     if (user != null && !this.rooms.isEmpty()) {
       this.rooms.forEach(roomId -> {
         this.leaveRoomUseCase.execute(roomId, user);
       });
     }
     super.afterConnectionClosed(session, closeStatus);
-  }
-
-  @Nullable
-  private User getUserFromSession(WebSocketSession session) {
-    var attributes = session.getAttributes();
-
-    var securityContext = (SecurityContext) attributes.get(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-    if (securityContext == null) {
-      return null;
-    }
-
-    var authentication = securityContext.getAuthentication();
-    if (authentication == null) {
-      return null;
-    }
-
-    var principal = authentication.getPrincipal();
-    if (!(principal instanceof User)) {
-      return null;
-    }
-
-    return (User) principal;
   }
 
   private void onEnter(RoomId roomId) {

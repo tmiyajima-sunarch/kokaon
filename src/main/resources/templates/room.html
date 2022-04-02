@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link
       rel="stylesheet"
       href="https://unpkg.com/purecss@2.1.0/build/pure-min.css"
       integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH"
       crossorigin="anonymous"
-    />
-    <title>Kokaon</title>
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-  </head>
-  <body>
-    <h1>Room: [[${room.name}]] <small>[[${room.id.value()}]]</small></h1>
+  />
+  <title>Kokaon</title>
+  <meta name="description" content=""/>
+  <meta name="author" content=""/>
+</head>
+<body>
+<h1>Room: [[${room.name}]] <small>[[${room.id.value()}]]</small></h1>
 
-    <div id="root"></div>
+<div id="root"></div>
 
-    <input type="hidden" id="csrf" th:value="${_csrf.token}" />
-    <input type="hidden" id="stompUrl" th:value="@{/stomp}" />
-    <input type="hidden" id="roomId" th:value="${room.id.value()}" />
+<input type="hidden" id="stompUrl" th:value="@{/stomp}"/>
+<input type="hidden" id="roomId" th:value="${room.id.value()}"/>
 
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/webstomp-client@1/dist/webstomp.min.js"></script>
-    <script src="https://unpkg.com/vue@3.2.31"></script>
-    <script th:src="@{/js/room.js}"></script>
-    <script>
-      const csrfToken = document.getElementById("csrf").value;
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/webstomp-client@1/dist/webstomp.min.js"></script>
+<script src="https://unpkg.com/vue@3.2.31"></script>
+<script th:src="@{/js/room.js}"></script>
+<script>
       const stompUrl = document.getElementById("stompUrl").value;
       const roomId = document.getElementById("roomId").value;
       const socket = new SockJS(stompUrl);
@@ -113,9 +111,6 @@
             const options = {
               method: "POST",
               body: formData,
-              headers: {
-                "X-CSRF-TOKEN": csrfToken,
-              },
             };
 
             fetch(this.action, options);
@@ -266,14 +261,7 @@
         },
 
         mounted() {
-          stompClient.connect({}, () => {
-            this.room = new Room(stompClient, roomId);
-            this.room.on("change", (state) => {
-              this.state = state;
-            });
-            this.room.init();
-            this.room.enter();
-          });
+          this.init();
         },
 
         beforeUnmount() {
@@ -286,9 +274,6 @@
           me() {
             return this.state ? this.state.me : null;
           },
-          owner() {
-            return this.state ? this.state.room.owner : null;
-          },
           members() {
             return this.state ? this.state.room.members : null;
           },
@@ -297,11 +282,33 @@
           },
         },
 
+        methods: {
+          init() {
+            const nickname = this.enterNickname();
+
+            stompClient.connect({}, () => {
+              this.room = new Room(stompClient, roomId);
+              this.room.on("change", (state) => {
+                this.state = state;
+              });
+              this.room.init();
+              this.room.enter(nickname);
+            });
+          },
+
+          enterNickname() {
+            while (true) {
+              const nickname = prompt('ニックネームを入力してください');
+              if (nickname) {
+                return nickname;
+              }
+            }
+          },
+        },
+
         template: `
           <div>
             <template v-if="state">
-              <h3>Owner</h3>
-              <p>{{owner.nickname}}</p>
               <h3>Members</h3>
               <member-list :members="members" :me="me" />
               <h3>Audios</h3>
@@ -319,6 +326,11 @@
       const app = Vue.createApp(App);
       app.config.unwrapInjectedRef = true;
       app.mount("#root");
-    </script>
-  </body>
+
+
+
+
+
+</script>
+</body>
 </html>
