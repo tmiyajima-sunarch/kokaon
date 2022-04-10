@@ -1,5 +1,6 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
+import jp.co.sunarch.telework.kokaon.model.PassCode;
 import jp.co.sunarch.telework.kokaon.model.Room;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,8 @@ public class CreateRoomUseCase {
 
   public Room execute(String name) {
     var roomId = this.roomRepository.generateRoomId();
-    var room = Room.of(roomId, name);
+    var passCode = PassCode.randomPassCode();
+    var room = Room.of(roomId, passCode, name);
     this.roomRepository.save(room);
 
     log.info("Room created: room={}", roomId.value());

@@ -5,6 +5,7 @@ import jp.co.sunarch.telework.kokaon.event.AudioPlayedEvent;
 import jp.co.sunarch.telework.kokaon.model.*;
 import jp.co.sunarch.telework.kokaon.usecase.EnterRoomUseCase;
 import jp.co.sunarch.telework.kokaon.usecase.LeaveRoomUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.ValidateRoomPassCodeUseCase;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -13,6 +14,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import java.util.*;
@@ -27,14 +29,17 @@ public class RoomMessagingController {
   private final RoomRepository roomRepository;
   private final AudioRepository audioRepository;
 
+  private final ValidateRoomPassCodeUseCase validateRoomPassCodeUseCase;
   private final EnterRoomUseCase enterRoomUseCase;
   private final LeaveRoomUseCase leaveRoomUseCase;
 
   private final UserSessionAccessor userSessionAccessor;
 
   @SubscribeMapping("/room/{id}")
-  public RoomJson onSubscribe(@DestinationVariable String id, SimpMessageHeaderAccessor headerAccessor) {
+  public RoomJson onSubscribe(@DestinationVariable String id, StompHeaderAccessor stompHeaderAccessor) {
     var roomId = new RoomId(id);
+    var passcode = stompHeaderAccessor.getNativeHeader("passcode").get(0);
+    this.validateRoomPassCodeUseCase.execute(roomId, passcode);
     return this.getRoomJson(roomId).get();
   }
 
@@ -43,10 +48,10 @@ public class RoomMessagingController {
     var roomId = new RoomId(id);
     var user = User.of(new UserId(enterForm.getId()), enterForm.getNickname());
 
+    this.enterRoomUseCase.execute(roomId, user);
+
     LeaveOnCloseWebSocketHandlerDecorator.onEnter(
         Objects.requireNonNull(headerAccessor.getSessionAttributes()), roomId);
-
-    this.enterRoomUseCase.execute(roomId, user);
 
     this.userSessionAccessor.set(headerAccessor.getSessionAttributes(), user);
   }
@@ -56,10 +61,10 @@ public class RoomMessagingController {
     var roomId = new RoomId(id);
     var user = this.userSessionAccessor.get(headerAccessor.getSessionAttributes());
 
+    this.leaveRoomUseCase.execute(roomId, user);
+
     LeaveOnCloseWebSocketHandlerDecorator.onLeave(
         Objects.requireNonNull(headerAccessor.getSessionAttributes()), roomId);
-
-    this.leaveRoomUseCase.execute(roomId, user);
   }
 
   @MessageMapping("/room/{id}/play/{audioId}")
@@ -89,6 +94,7 @@ public class RoomMessagingController {
   @Value
   static class RoomJson {
     String id;
+    String passcode;
     String name;
     List<UserJson> members;
     List<AudioJson> audios;
@@ -96,6 +102,7 @@ public class RoomMessagingController {
     static RoomJson of(Room room, Collection<User> members, Collection<Audio> audios, Function<Audio, String> toUrl) {
       return new RoomJson(
           room.getId().value(),
+          room.getPassCode().value(),
           room.getName(),
           members.stream().map(UserJson::of).toList(),
           audios.stream().map(audio -> AudioJson.of(audio, toUrl.apply(audio))).toList());

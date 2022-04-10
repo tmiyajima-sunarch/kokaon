@@ -15,6 +15,7 @@ import java.util.Set;
 @Value
 public class Room {
   RoomId id;
+  PassCode passCode;
   String name;
   @With(AccessLevel.PRIVATE)
   RoomState state;
@@ -23,8 +24,8 @@ public class Room {
   @With(AccessLevel.PRIVATE)
   Set<AudioId> audioIds;
 
-  public static Room of(RoomId id, String name) {
-    return new Room(id, name, RoomState.OPEN, Set.of(), Set.of());
+  public static Room of(RoomId id, PassCode passCode, String name) {
+    return new Room(id, passCode, name, RoomState.OPEN, Set.of(), Set.of());
   }
 
   public Room enter(User user) {
@@ -54,6 +55,10 @@ public class Room {
 
   public boolean isMember(User user) {
     return this.members.contains(user);
+  }
+
+  public boolean isPassCodeMatches(String passCode) {
+    return this.passCode.matches(passCode);
   }
 
   private void checkStateIsOpen() {
