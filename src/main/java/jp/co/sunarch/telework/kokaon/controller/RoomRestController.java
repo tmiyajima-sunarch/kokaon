@@ -28,6 +28,11 @@ public class RoomRestController {
     return new CreateRoomResultJson(room.getId().value());
   }
 
+  @PostMapping("/api/v1/room/{id}/validate")
+  public ValidateRoomResultJson validate(@RequestBody @Valid ValidateRoomInputJson input) {
+    return new ValidateRoomResultJson(true);
+  }
+
   @Data
   static class CreateRoomInputJson {
     @NotBlank
@@ -37,5 +42,16 @@ public class RoomRestController {
   @Value
   static class CreateRoomResultJson {
     String roomId;
+  }
+
+  @Data
+  static class ValidateRoomInputJson {
+    @NotBlank
+    private String passcode;
+  }
+
+  @Value
+  static class ValidateRoomResultJson {
+    boolean ok;
   }
 }
