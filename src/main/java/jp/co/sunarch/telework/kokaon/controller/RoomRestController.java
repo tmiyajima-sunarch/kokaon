@@ -32,9 +32,9 @@ public class RoomRestController {
   public ValidateRoomResultJson validate(@PathVariable String id, @RequestBody @Valid ValidateRoomInputJson input) {
     try {
       this.validateRoomPassCodeUseCase.execute(new RoomId(id), input.getPasscode());
-      return new ValidateRoomResultJson(true);
+      return new ValidateRoomResultJson(id, true);
     } catch (Exception e) {
-      return new ValidateRoomResultJson(false);
+      return new ValidateRoomResultJson(id, false);
     }
   }
 
@@ -58,6 +58,7 @@ public class RoomRestController {
 
   @Value
   static class ValidateRoomResultJson {
+    String roomId;
     boolean ok;
   }
 }
