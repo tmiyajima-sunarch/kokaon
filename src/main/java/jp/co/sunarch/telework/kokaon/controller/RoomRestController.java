@@ -3,6 +3,7 @@ package jp.co.sunarch.telework.kokaon.controller;
 import jp.co.sunarch.telework.kokaon.model.Room;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.usecase.CreateRoomUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.InvalidRoomPassCodeException;
 import jp.co.sunarch.telework.kokaon.usecase.ValidateRoomPassCodeUseCase;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class RoomRestController {
     try {
       this.validateRoomPassCodeUseCase.execute(new RoomId(id), input.getPasscode());
       return new ValidateRoomResultJson(id, true);
-    } catch (Exception e) {
+    } catch (InvalidRoomPassCodeException e) {
       return new ValidateRoomResultJson(id, false);
     }
   }

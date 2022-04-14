@@ -3,9 +3,10 @@ package jp.co.sunarch.telework.kokaon.controller;
 import jp.co.sunarch.telework.kokaon.model.AudioId;
 import jp.co.sunarch.telework.kokaon.model.AudioRepository;
 import jp.co.sunarch.telework.kokaon.model.RoomId;
-import jp.co.sunarch.telework.kokaon.usecase.AddAudioUseCase;
+import jp.co.sunarch.telework.kokaon.usecase.audio.AddAudioUseCase;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,14 +28,14 @@ public class AudioController {
   private final AudioRepository audioRepository;
 
   @PostMapping("/room/{id}/audios")
-  public ResponseEntity<Void> addAudio(@PathVariable String id, AddAudioForm addAudioForm) {
+  public ResponseEntity<AddAudioResult> addAudio(@PathVariable String id, AddAudioForm addAudioForm) {
     var roomId = new RoomId(id);
 
     // TODO バリデーション
 
-    this.addAudioUseCase.execute(roomId, addAudioForm.getAudioFile(), addAudioForm.getName(), new AudioUrlResolver(roomId));
+    var audioId = this.addAudioUseCase.execute(roomId, addAudioForm.getAudioFile(), addAudioForm.getName(), new AudioUrlResolver(roomId));
 
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok(new AddAudioResult(roomId.value(), audioId.value(), addAudioForm.getName()));
   }
 
   @GetMapping("/room/{id}/audios/{audioId}")
@@ -49,5 +50,12 @@ public class AudioController {
   static class AddAudioForm {
     String name;
     MultipartFile audioFile;
+  }
+
+  @Value
+  static class AddAudioResult {
+    String roomId;
+    String audioId;
+    String audioName;
   }
 }

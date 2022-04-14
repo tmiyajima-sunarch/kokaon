@@ -1,11 +1,9 @@
-package jp.co.sunarch.telework.kokaon.usecase;
+package jp.co.sunarch.telework.kokaon.usecase.audio;
 
 import jp.co.sunarch.telework.kokaon.event.AudioAddedEvent;
 import jp.co.sunarch.telework.kokaon.event.RoomEventPublisher;
-import jp.co.sunarch.telework.kokaon.model.Audio;
-import jp.co.sunarch.telework.kokaon.model.AudioRepository;
-import jp.co.sunarch.telework.kokaon.model.RoomId;
-import jp.co.sunarch.telework.kokaon.model.RoomRepository;
+import jp.co.sunarch.telework.kokaon.model.*;
+import jp.co.sunarch.telework.kokaon.usecase.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +24,7 @@ public class AddAudioUseCase {
   private final AudioRepository audioRepository;
   private final RoomEventPublisher roomEventPublisher;
 
-  public void execute(RoomId roomId, MultipartFile file, String name, Function<Audio, String> toUrl) {
+  public AudioId execute(RoomId roomId, MultipartFile file, String name, Function<Audio, String> toUrl) {
     var room = this.roomRepository.findById(roomId)
         .orElseThrow(() -> new RoomNotFoundException(roomId));
 
@@ -40,5 +38,7 @@ public class AddAudioUseCase {
     log.info("Audio added: room={}, audio={}", roomId.value(), audioId.value());
 
     this.roomEventPublisher.publish(AudioAddedEvent.of(roomId, audio, toUrl.apply(audio)));
+
+    return audioId;
   }
 }
