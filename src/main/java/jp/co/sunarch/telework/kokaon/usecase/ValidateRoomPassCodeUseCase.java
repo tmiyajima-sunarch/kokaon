@@ -1,10 +1,10 @@
 package jp.co.sunarch.telework.kokaon.usecase;
 
+import org.springframework.stereotype.Service;
+
 import jp.co.sunarch.telework.kokaon.model.RoomId;
 import jp.co.sunarch.telework.kokaon.model.RoomRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
  * パスコードを検証する。
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
  */
 @RequiredArgsConstructor
 @Service
-@Slf4j
 public class ValidateRoomPassCodeUseCase {
   private final RoomRepository roomRepository;
 
